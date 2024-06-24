@@ -1,0 +1,82 @@
+---
+title: "Regime Types in Latam since 1945"
+author: "Ana Luisa Bodevan"
+format: html
+editor: visual
+---
+
+## Objective
+
+How did regimes changed and evolved in Latin America since 1945? This graph uses Cheihub and Vreeland (2010) classification of regimes according to various metrics explained in their paper "Democracy and Dictatorship Revisited" (2010).
+
+This visualization is inspired and draws deeply from the incredible tutorial at [R for Political Science](https://rforpoliticalscience.com/2022/03/18/download-democracy-data-with-democracydata-pacakge-in-r/)
+
+```{r}
+#| echo: false
+
+getwd()
+setwd("C:/Users/anabo/OneDrive/Documentos/R/ggplot2")
+getwd()
+```
+
+#### Packages
+
+```{r}
+
+#| label: setup
+
+library(pacman)
+pacman :: p_load('democracyData', 'tidyverse', 'magrittr', 'ggstream', 'ggthemes', 'MetBrewer')
+```
+
+#### Data
+
+Dataset is from Cheihub and Vreeland (2010) aforementioned paper, dowloaded with the democracyData package by [Xavier Marquez](https://github.com/xmarquez)
+
+```{r}
+
+#| label: data wrangling 
+
+pacl <- redownload_pacl()
+
+pacl %<>% 
+  mutate(regime_name = ifelse(regime == 0, "Parliamentary democracies",
+       ifelse(regime == 1, "Mixed democracies",
+       ifelse(regime == 2, "Presidential democracies",
+       ifelse(regime == 3, "Civilian autocracies",
+       ifelse(regime == 4, "Military dictatorships",
+       ifelse(regime ==  5,"Royal dictatorships", regime))))))) %>%
+  mutate(regime = as.factor(regime)) # create factor variables according to the codebook
+
+americas <- subset(pacl, un_continent_name == "Americas") # create a new dataset for Latam
+
+regime_types <- c("Parliamentary democracies", "Presidential democracies", 
+                  "Mixed democracies", "Royal dictatorships", 
+                  "Civilian autocracies", "Military dictatorships")
+
+types <- americas %>%
+  group_by(year, regime_name) %>%
+  count() %>%
+  filter(regime_name %in% regime_types) %>%
+  arrange(year, desc(n)) %>%
+  ungroup() # creates a dataset storing each year and the types of regimes 
+```
+
+#### Visualization
+
+```{r}
+
+#| label: plotting
+
+palette <- met.brewer('Peru2', n = 6, type = 'discrete', direction = 1)
+
+ggplot(types, aes(x = year, y = n, fill = regime_name)) +
+  geom_area(position = "stack", color = "white") +
+  scale_fill_manual(values = palette) +  # Use MetBrewer color palette
+  labs(x = "Decade", y = NULL, fill = "Regime Type", title = "Regime Types in Latin America since 1945", subtitle = "by Ana Luisa Bodevan, inspired by R for Political Science\nSource: Cheihub and Vreeland (2010)") +  # Labels for axes and legend
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),  
+        panel.grid.minor = element_blank(),
+        legend.position = "bottom")
+
+```
