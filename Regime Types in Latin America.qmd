@@ -11,13 +11,6 @@ How did regimes changed and evolved in Latin America since 1945? This graph uses
 
 This visualization is inspired and draws deeply from the incredible tutorial at [R for Political Science](https://rforpoliticalscience.com/2022/03/18/download-democracy-data-with-democracydata-pacakge-in-r/)
 
-```{r}
-#| echo: false
-
-getwd()
-setwd("C:/Users/anabo/OneDrive/Documentos/R/ggplot2")
-getwd()
-```
 
 #### Packages
 
